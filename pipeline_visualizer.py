@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from ast_nodes import Assign, BinOp, If, Num, Print, Program, Var, While
+from code_generator import CodeGenerationError, generate
 from lexer import lexer
 from parser import parse
 
@@ -160,6 +161,8 @@ def render_pipeline(source: str) -> str:
     tokens: list[tuple[str, str]] = []
     lex_error: str | None = None
     parse_error: str | None = None
+    generation_error: str | None = None
+    generated = ""
     tree: Program | None = None
     try:
         tokens = lexer(source)
@@ -170,13 +173,26 @@ def render_pipeline(source: str) -> str:
             tree = parse(tokens)
         except SyntaxError as error:
             parse_error = str(error)
+    if tree is not None:
+        try:
+            generated = generate(tree)
+        except CodeGenerationError as error:
+            generation_error = str(error)
 
     lexer_status = "success" if lex_error is None else "error"
     parser_status = "success" if tree is not None else ("blocked" if lex_error else "error")
+    generator_status = "success" if generated or tree is not None and not generation_error else (
+        "blocked" if tree is None else "error"
+    )
     ast_content = (
         f"{_ast_tree(tree)}<div class='diagram'>{_ast_svg(tree)}</div>"
         if tree is not None
         else f"<div class='error'>{_escape(parse_error or 'Waiting for valid tokens')}</div>"
+    )
+    generator_content = (
+        f"<pre class='source'>{_escape(generated)}</pre>"
+        if generator_status == "success"
+        else f"<div class='error'>{_escape(generation_error or 'Waiting for a valid AST')}</div>"
     )
     return _PAGE_TEMPLATE.format(
         source=_escape(source),
@@ -187,6 +203,12 @@ def render_pipeline(source: str) -> str:
         parser_status=parser_status,
         parser_class=_status_class(parser_status),
         parser_detail=_escape(parse_error or ("AST created" if tree else "Not run")),
+        generator_status=generator_status,
+        generator_class=_status_class(generator_status),
+        generator_detail=_escape(
+            generation_error or ("Python generated" if generated or tree is not None else "Not run")
+        ),
+        generator_content=generator_content,
         ast_content=ast_content,
     )
 
@@ -216,12 +238,13 @@ table {{ width:100%; border-collapse:collapse; }} th,td {{ text-align:left; padd
 </head>
 <body><main>
 <h1>Mini Compiler Pipeline</h1>
-<p class="lead">Source → lexer tokens → recursive-descent parser → abstract syntax tree</p>
+<p class="lead">Source → lexer tokens → parser/AST → generated Python</p>
 <section class="pipeline">
 <article class="card"><h2>1. Source</h2><pre class="source">{source}</pre></article>
 <article class="card"><h2>2. Lexer <span class="badge {lexer_class}">{lexer_status}</span></h2><p>{lexer_detail}</p>{tokens}</article>
 <article class="card"><h2>3. Parser <span class="badge {parser_class}">{parser_status}</span></h2><p>{parser_detail}</p></article>
 </section>
+<section class="card"><h2>4. Generated Python <span class="badge {generator_class}">{generator_status}</span></h2><p>{generator_detail}</p>{generator_content}</section>
 <section class="card"><h2>Abstract Syntax Tree</h2>{ast_content}</section>
 </main></body></html>"""
 

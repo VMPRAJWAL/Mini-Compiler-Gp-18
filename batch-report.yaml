@@ -1,0 +1,107 @@
+batch_id: "B01"
+completed_tasks: ["T001", "T002", "T003", "T004", "T005", "T006", "T007", "T008", "T009", "T010", "T011", "T012", "T013", "T014", "T015", "T016", "T017"]
+blocked_tasks: []
+files_changed:
+  T002:
+    - file: "code_generator.py"
+      change_type: "created"
+      description: "AST-to-Python generator and CodeGenerationError"
+  T005:
+    - file: "test_code_generator.py"
+      change_type: "created"
+      description: "Code generator unit tests"
+  T006:
+    - file: "compiler.py"
+      change_type: "created"
+      description: "Compiler API and CLI"
+  T008:
+    - file: "test_compiler_integration.py"
+      change_type: "created"
+      description: "End-to-end compiler, example, and error tests"
+  T009:
+    - file: "pipeline_visualizer.py"
+      change_type: "modified"
+      description: "Generated Python pipeline stage"
+  T011:
+    - file: "examples/"
+      change_type: "created"
+      description: "Ten valid mini-language programs"
+  T015:
+    - file: "README.md"
+      change_type: "modified"
+      description: "Complete compiler usage and technical documentation"
+  T017:
+    - file: "checkpoints/tasks-to-impl.yaml"
+      change_type: "created"
+      description: "Implementation traceability checkpoint"
+upstream_artifacts_consumed:
+  T001:
+    - artifact: "plan.md"
+      used_for: "Code-generation requirements and task breakdown"
+    - artifact: "TOC_18_Projects.pdf"
+      used_for: "Full-pipeline and generated-Python requirements"
+  T009:
+    - artifact: "pipeline_visualizer.py"
+      used_for: "Existing visualizer behavior and rendering structure"
+  T015:
+    - artifact: "README.md"
+      used_for: "Existing documentation and user workflow"
+evidence_mapping:
+  T002:
+    - upstream: "plan.md#Step 2"
+      output: "code_generator.py"
+      evidence: "test_code_generator.py"
+  T006:
+    - upstream: "plan.md#Step 3"
+      output: "compiler.py"
+      evidence: "test_compiler_integration.py"
+  T011:
+    - upstream: "plan.md#Step 5"
+      output: "examples/*.mc"
+      evidence: "test_all_examples_generate_valid_python"
+traceability:
+  - requirement: "REQ-001"
+    plan_item: "2.1"
+    task: "T002"
+    files: ["code_generator.py"]
+    status: "completed"
+  - requirement: "REQ-002"
+    plan_item: "2.1"
+    task: "T004"
+    files: ["code_generator.py"]
+    status: "completed"
+  - requirement: "REQ-003"
+    plan_item: "3.1"
+    task: "T006"
+    files: ["compiler.py"]
+    status: "completed"
+  - requirement: "REQ-004"
+    plan_item: "4.1"
+    task: "T009"
+    files: ["pipeline_visualizer.py"]
+    status: "completed"
+  - requirement: "REQ-005"
+    plan_item: "5.1"
+    task: "T013"
+    files: ["examples/", "test_compiler_integration.py"]
+    status: "completed"
+  - requirement: "REQ-006"
+    plan_item: "6.1"
+    task: "T014"
+    files: ["test_compiler_integration.py"]
+    status: "completed"
+  - requirement: "REQ-007"
+    plan_item: "7.1"
+    task: "T015"
+    files: ["README.md"]
+    status: "completed"
+protocol_violation: false
+errors: []
+warnings: []
+test_results:
+  T017:
+    command: "python -m unittest -q"
+    passed: 57
+    failed: 0
+    skipped: 0
+    failures: []
